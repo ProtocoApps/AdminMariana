@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel Admin - Vida Saudável</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">VA</div>
+          <div>
+            <div class="title">Painel Admin</div>
+            <div class="subtitle">Vida Saudável</div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <span id="userEmail" class="muted"></span>
+          <button id="logoutBtn" class="btn btn-secondary hidden">Sair</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="authView" class="card">
+          <h2>Entrar</h2>
+          <p class="muted">Use o mesmo Supabase do app. (Este painel é separado do app, mas gerencia as mesmas tabelas.)</p>
+
+          <form id="loginForm" class="grid">
+            <label>
+              <span>Email</span>
+              <input id="loginEmail" type="email" placeholder="seu@email.com" required />
+            </label>
+            <label>
+              <span>Senha</span>
+              <input id="loginPassword" type="password" placeholder="********" required />
+            </label>
+            <button class="btn btn-primary" type="submit">Entrar</button>
+          </form>
+
+          <div class="divider"></div>
+
+          <h3>Criar conta</h3>
+          <form id="signupForm" class="grid">
+            <label>
+              <span>Email</span>
+              <input id="signupEmail" type="email" placeholder="seu@email.com" required />
+            </label>
+            <label>
+              <span>Senha</span>
+              <input id="signupPassword" type="password" placeholder="********" required />
+            </label>
+            <button class="btn btn-primary" type="submit">Criar conta</button>
+          </form>
+        </section>
+
+        <section id="dashboardView" class="hidden">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Usuários</h3>
+              <div class="stat-value" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Ativos Hoje</h3>
+              <div class="stat-value" id="activeToday">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Novos Esta Semana</h3>
+              <div class="stat-value" id="newThisWeek">0</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Gerenciar Usuários</h2>
+            
+            <div class="table-controls">
+              <input type="text" id="searchUsers" placeholder="Buscar usuários..." class="search-input">
+              <select id="filterRole" class="filter-select">
+                <option value="">Todos os papéis</option>
+                <option value="admin">Admin</option>
+                <option value="user">Usuário</option>
+              </select>
+            </div>
+
+            <div class="table-wrapper">
+              <table id="usersTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Papel</th>
+                    <th>Criado em</th>
+                    <th>Último acesso</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <!-- Users will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination">
+              <button id="prevPage" class="btn btn-secondary">Anterior</button>
+              <span id="pageInfo">Página 1 de 1</span>
+              <button id="nextPage" class="btn btn-secondary">Próximo</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Adicionar Novo Usuário</h2>
+            <form id="addUserForm" class="grid">
+              <label>
+                <span>Email</span>
+                <input id="newUserEmail" type="email" placeholder="novo@usuario.com" required />
+              </label>
+              <label>
+                <span>Senha</span>
+                <input id="newUserPassword" type="password" placeholder="********" required />
+              </label>
+              <label>
+                <span>Papel</span>
+                <select id="newUserRole" required>
+                  <option value="user">Usuário</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
+              <button class="btn btn-primary" type="submit">Adicionar Usuário</button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="supabaseClient.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
