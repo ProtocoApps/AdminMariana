@@ -50,93 +50,301 @@
             </label>
             <label>
               <span>Senha</span>
-              <input id="signupPassword" type="password" placeholder="********" required />
+              <input id="signupPassword" type="password" placeholder="mínimo 6 caracteres" minlength="6" required />
             </label>
-            <button class="btn btn-primary" type="submit">Criar conta</button>
+            <button class="btn btn-secondary" type="submit">Cadastrar</button>
           </form>
+
+          <p id="authMsg" class="msg"></p>
         </section>
 
-        <section id="dashboardView" class="hidden">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <h3>Usuários</h3>
-              <div class="stat-value" id="totalUsers">0</div>
-            </div>
-            <div class="stat-card">
-              <h3>Ativos Hoje</h3>
-              <div class="stat-value" id="activeToday">0</div>
-            </div>
-            <div class="stat-card">
-              <h3>Novos Esta Semana</h3>
-              <div class="stat-value" id="newThisWeek">0</div>
-            </div>
-          </div>
+        <section id="adminView" class="hidden">
+          <div class="shell">
+            <aside class="sidebar">
+              <div class="sidebar-header">
+                <div class="sidebar-title">Conteúdo</div>
+                <div class="sidebar-subtitle">Gerenciamento</div>
+              </div>
 
-          <div class="card">
-            <h2>Gerenciar Usuários</h2>
-            
-            <div class="table-controls">
-              <input type="text" id="searchUsers" placeholder="Buscar usuários..." class="search-input">
-              <select id="filterRole" class="filter-select">
-                <option value="">Todos os papéis</option>
-                <option value="admin">Admin</option>
-                <option value="user">Usuário</option>
-              </select>
+              <nav class="nav">
+                <button class="nav-item active" data-view="audios" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Áudios</span>
+                </button>
+                <button class="nav-item" data-view="treinos" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Treinos</span>
+                </button>
+                <button class="nav-item" data-view="home" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Home (Cards)</span>
+                </button>
+                <button class="nav-item" data-view="programacao" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Programação (Treinos)</span>
+                </button>
+              </nav>
+
+              <div class="sidebar-footer muted">
+                Use URLs para mídia.
+              </div>
+            </aside>
+
+            <div class="main">
+              <div class="main-header">
+                <div>
+                  <div id="viewTitle" class="view-title">Áudios</div>
+                  <div class="muted">Adicionar, editar e remover itens</div>
+                </div>
+              </div>
+
+              <section id="tab-audios" class="tab-panel">
+            <div class="panel-header">
+              <h2>Áudios</h2>
+              <button id="reloadAudios" class="btn btn-secondary">Atualizar</button>
             </div>
 
-            <div class="table-wrapper">
-              <table id="usersTable">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Papel</th>
-                    <th>Criado em</th>
-                    <th>Último acesso</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                  <!-- Users will be loaded here -->
-                </tbody>
-              </table>
+            <div class="card">
+              <h3 id="audioFormTitle">Novo áudio</h3>
+              <form id="audioForm" class="grid">
+                <input type="hidden" id="audioId" />
+                <label>
+                  <span>Título</span>
+                  <input id="audioTitle" type="text" required />
+                </label>
+                <label>
+                  <span>Duração (ex: 12 min)</span>
+                  <input id="audioDuration" type="text" required />
+                </label>
+                <label>
+                  <span>Categoria</span>
+                  <input id="audioCategory" type="text" required />
+                </label>
+                <label>
+                  <span>Imagem (URL)</span>
+                  <input id="audioImageUrl" type="url" required />
+                </label>
+                <label>
+                  <span>Áudio (URL)</span>
+                  <input id="audioUrl" type="url" required />
+                </label>
+                <label class="full">
+                  <span>Descrição (opcional)</span>
+                  <textarea id="audioDescription" rows="3"></textarea>
+                </label>
+
+                <div class="row">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="audioCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="audioMsg" class="msg"></p>
+              </form>
             </div>
 
-            <div class="pagination">
-              <button id="prevPage" class="btn btn-secondary">Anterior</button>
-              <span id="pageInfo">Página 1 de 1</span>
-              <button id="nextPage" class="btn btn-secondary">Próximo</button>
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Categoria</th>
+                      <th>Duração</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audiosTbody"></tbody>
+                </table>
+              </div>
             </div>
-          </div>
+              </section>
 
-          <div class="card">
-            <h2>Adicionar Novo Usuário</h2>
-            <form id="addUserForm" class="grid">
-              <label>
-                <span>Email</span>
-                <input id="newUserEmail" type="email" placeholder="novo@usuario.com" required />
-              </label>
-              <label>
-                <span>Senha</span>
-                <input id="newUserPassword" type="password" placeholder="********" required />
-              </label>
-              <label>
-                <span>Papel</span>
-                <select id="newUserRole" required>
-                  <option value="user">Usuário</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </label>
-              <button class="btn btn-primary" type="submit">Adicionar Usuário</button>
-            </form>
+              <section id="tab-treinos" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Treinos</h2>
+              <button id="reloadTreinos" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3 id="treinoFormTitle">Novo treino</h3>
+              <form id="treinoForm" class="grid">
+                <input type="hidden" id="treinoId" />
+                <label>
+                  <span>Título</span>
+                  <input id="treinoTitulo" type="text" required />
+                </label>
+                <label>
+                  <span>Categoria</span>
+                  <select id="treinoCategoriaSelect" class="select" required></select>
+                </label>
+                <label id="treinoCategoriaNovaWrap" class="hidden">
+                  <span>Nova categoria</span>
+                  <input id="treinoCategoriaNova" type="text" />
+                </label>
+                <label>
+                  <span>Nível (Iniciante/Intermediário/Avançado)</span>
+                  <input id="treinoNivel" type="text" required />
+                </label>
+                <label>
+                  <span>Duração (ex: 25 min)</span>
+                  <input id="treinoDuracao" type="text" required />
+                </label>
+                <label>
+                  <span>Vídeo (URL)</span>
+                  <input id="treinoVideoUrl" type="url" required />
+                </label>
+                <label>
+                  <span>Thumbnail (URL)</span>
+                  <input id="treinoThumbUrl" type="url" required />
+                </label>
+
+                <div class="row">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="treinoCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="treinoMsg" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Nível</th>
+                      <th>Categoria</th>
+                      <th>Duração</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="treinosTbody"></tbody>
+                </table>
+              </div>
+            </div>
+              </section>
+
+              <section id="tab-home" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Home (Cards)</h2>
+              <button id="reloadHomeCards" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3 id="homeCardFormTitle">Novo card</h3>
+              <form id="homeCardForm" class="grid">
+                <input type="hidden" id="homeCardId" />
+
+                <label>
+                  <span>Título</span>
+                  <input id="homeTitle" type="text" required />
+                </label>
+
+                <label>
+                  <span>Descrição</span>
+                  <input id="homeDesc" type="text" required />
+                </label>
+
+                <label>
+                  <span>Ícone (Material Symbols)</span>
+                  <input id="homeIcon" type="text" placeholder="fitness_center" required />
+                </label>
+
+                <label>
+                  <span>Tela (AppScreen)</span>
+                  <input id="homeScreen" type="text" placeholder="TREINOS" required />
+                </label>
+
+                <label>
+                  <span>Ordem</span>
+                  <input id="homeSortOrder" type="number" value="0" />
+                </label>
+
+                <label class="checkbox">
+                  <input id="homeIsActive" type="checkbox" checked />
+                  <span>Ativo</span>
+                </label>
+
+                <div class="row full">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="homeCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="homeMsg" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Screen</th>
+                      <th>Ícone</th>
+                      <th>Ordem</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="homeCardsTbody"></tbody>
+                </table>
+              </div>
+            </div>
+              </section>
+
+              <section id="tab-programacao" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Programação (Treinos)</h2>
+              <button id="reloadProgramacao" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3>Treino por dia da semana</h3>
+              <p class="muted">Selecione qual treino vai aparecer para o usuário em cada dia.</p>
+
+              <form id="programacaoForm" class="grid">
+                <div class="full muted">Segunda (1)</div>
+                <select id="prog-1" class="select full"></select>
+
+                <div class="full muted">Terça (2)</div>
+                <select id="prog-2" class="select full"></select>
+
+                <div class="full muted">Quarta (3)</div>
+                <select id="prog-3" class="select full"></select>
+
+                <div class="full muted">Quinta (4)</div>
+                <select id="prog-4" class="select full"></select>
+
+                <div class="full muted">Sexta (5)</div>
+                <select id="prog-5" class="select full"></select>
+
+                <div class="full muted">Sábado (6)</div>
+                <select id="prog-6" class="select full"></select>
+
+                <div class="full muted">Domingo (7)</div>
+                <select id="prog-7" class="select full"></select>
+
+                <div class="row full">
+                  <button class="btn btn-primary" type="submit">Salvar programação</button>
+                </div>
+                <p id="programacaoMsg" class="msg"></p>
+              </form>
+            </div>
+              </section>
+            </div>
           </div>
         </section>
       </main>
+
+      <footer class="footer">
+        <span class="muted">Painel Admin (básico) • gerencia tabelas do Supabase</span>
+      </footer>
     </div>
 
-    <div id="toast" class="toast hidden"></div>
-
-    <script src="supabaseClient.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="supabaseClient.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

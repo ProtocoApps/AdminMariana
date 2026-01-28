@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Usuários - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 20px; background: #800020; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #600018; }
+        .result { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; white-space: pre-wrap; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Verificar Usuários no Supabase</h1>
+        <p>Clique no botão para verificar os usuários existentes no banco de dados:</p>
+        <button onclick="verificarUsuarios()">Verificar Usuários</button>
+        <button onclick="criarAdmin()">Criar Admin Teste</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+
+        const SUPABASE_URL = 'https://bqiklofbfiatcdpenpyy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxaWtsb2ZiZmlhdGNkcGVucHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NDgxOTcsImV4cCI6MjA4NDUyNDE5N30._dNpdz9UjPijmx0QumORBYRxvUHcErFtdQ4KiFkpm6s';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        window.verificarUsuarios = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Verificando...';
+            
+            try {
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">Erro ao buscar usuários: ${error.message}</div>`;
+                    return;
+                }
+                
+                if (users && users.length > 0) {
+                    let output = `<div class="success">✅ Encontrados ${users.length} usuários:</div>\n\n`;
+                    users.forEach((user, index) => {
+                        output += `${index + 1}. ID: ${user.id}\n`;
+                        output += `   Email: ${user.email}\n`;
+                        output += `   Papel: ${user.role || 'user'}\n`;
+                        output += `   Criado em: ${new Date(user.created_at).toLocaleString('pt-BR')}\n`;
+                        output += `   Último acesso: ${user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('pt-BR') : 'Nunca'}\n\n`;
+                    });
+                    resultDiv.textContent = output;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Nenhum usuário encontrado na tabela users.</div>`;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error">Erro inesperado: ${err.message}</div>`;
+            }
+        };
+
+        window.criarAdmin = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Criando admin...';
+            
+            try {
+                const email = 'admin@vidasaudavel.com';
+                const password = 'admin123456';
+                
+                // Criar usuário no auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                });
+                
+                if (authError) {
+                    resultDiv.innerHTML = `<div class="error">Erro ao criar auth: ${authError.message}</div>`;
+                    return;
+                }
+                
+                // Adicionar à tabela users
+                const { error: dbError } = await supabase
+                    .from('users')
+                    .insert({
+                        id: authData.user.id,
+                        email: email,
+                        role: 'admin',
+                        created_at: new Date().toISOString(),
+                    });
+                
+                if (dbError) {
+                    resultDiv.innerHTML = `<div class="error">Erro ao inserir na tabela: ${dbError.message}</div>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `<div class="success">✅ Admin criado com sucesso!<br>Email: ${email}<br>Senha: ${password}</div>`;
+                
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error">Erro: ${err.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
