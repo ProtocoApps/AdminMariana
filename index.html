@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel Admin - Vida Saudável</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">VA</div>
+          <div>
+            <div class="title">Painel Admin</div>
+            <div class="subtitle">Vida Saudável</div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <span id="userEmail" class="muted"></span>
+          <button id="logoutBtn" class="btn btn-secondary hidden">Sair</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="authView" class="auth-container">
+          <div class="auth-split">
+            <!-- Coluna do Formulário -->
+            <div class="auth-form-column">
+              <div class="auth-form-card">
+                <div class="auth-header-simple">
+                  <div class="brand-simple">
+                    <div class="logo-simple">VA</div>
+                    <div class="brand-text">
+                      <h1>Painel Admin</h1>
+                      <p>Vida Saudável</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="auth-content-simple">
+                  <div class="auth-welcome">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Entre com suas credenciais para acessar o painel administrativo</p>
+                  </div>
+
+                  <div class="auth-tabs-simple">
+                    <button class="auth-tab-simple active" data-tab="login">Entrar</button>
+                    <button class="auth-tab-simple" data-tab="signup">Cadastrar</button>
+                  </div>
+
+                  <div class="auth-forms-simple">
+                    <div id="loginPanel" class="form-panel-simple active">
+                      <form id="loginForm" class="form-simple">
+                        <div class="input-group">
+                          <input id="loginEmail" type="email" required />
+                          <label for="loginEmail">Email</label>
+                        </div>
+                        <div class="input-group">
+                          <input id="loginPassword" type="password" required />
+                          <label for="loginPassword">Senha</label>
+                        </div>
+                        <div class="form-options-simple">
+                          <label class="checkbox-simple">
+                            <input type="checkbox" id="rememberMe" />
+                            <span>Lembrar de mim</span>
+                          </label>
+                          <a href="#" class="forgot-link-simple">Esqueceu a senha?</a>
+                        </div>
+                        <button class="btn-primary-simple" type="submit">
+                          <span>Entrar</span>
+                          <span class="btn-arrow">→</span>
+                        </button>
+                      </form>
+                    </div>
+
+                    <div id="signupPanel" class="form-panel-simple">
+                      <form id="signupForm" class="form-simple">
+                        <div class="input-group">
+                          <input id="signupEmail" type="email" required />
+                          <label for="signupEmail">Email</label>
+                        </div>
+                        <div class="input-group">
+                          <input id="signupPassword" type="password" minlength="6" required />
+                          <label for="signupPassword">Senha</label>
+                        </div>
+                        <div class="input-group">
+                          <input id="confirmPassword" type="password" required />
+                          <label for="confirmPassword">Confirmar senha</label>
+                        </div>
+                        <button class="btn-secondary-simple" type="submit">
+                          <span>Criar conta</span>
+                          <span class="btn-arrow">+</span>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                  <div class="auth-info-simple">
+                    <div class="info-badge">
+                      <span class="info-icon">�</span>
+                      <span>Conexão segura via Supabase</span>
+                    </div>
+                  </div>
+
+                  <div id="authMsg" class="auth-message-simple"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coluna Visual -->
+            <div class="auth-visual-column">
+              <div class="visual-content">
+                <div class="visual-illustration">
+                  <div class="dashboard-preview">
+                    <div class="preview-header">
+                      <div class="preview-logo">VA</div>
+                      <div class="preview-nav">
+                        <div class="preview-dot"></div>
+                        <div class="preview-dot"></div>
+                        <div class="preview-dot"></div>
+                      </div>
+                    </div>
+                    <div class="preview-content">
+                      <div class="preview-sidebar">
+                        <div class="preview-item active"></div>
+                        <div class="preview-item"></div>
+                        <div class="preview-item"></div>
+                        <div class="preview-item"></div>
+                      </div>
+                      <div class="preview-main">
+                        <div class="preview-card"></div>
+                        <div class="preview-stats">
+                          <div class="stat-item"></div>
+                          <div class="stat-item"></div>
+                          <div class="stat-item"></div>
+                        </div>
+                        <div class="preview-chart"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="visual-text">
+                  <h3>Gestão Completa</h3>
+                  <p>Controle total sobre áudios, treinos, programação e conteúdo do aplicativo Vida Saudável</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="adminView" class="hidden">
+          <div class="shell">
+            <aside class="sidebar">
+              <div class="sidebar-header">
+                <div class="sidebar-title">Conteúdo</div>
+                <div class="sidebar-subtitle">Gerenciamento</div>
+              </div>
+
+              <nav class="nav">
+                <button class="nav-item active" data-view="audios" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Áudios</span>
+                </button>
+                <button class="nav-item" data-view="treinos" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Treinos</span>
+                </button>
+                <button class="nav-item" data-view="home" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Home (Cards)</span>
+                </button>
+                <button class="nav-item" data-view="programacao" type="button">
+                  <span class="nav-dot"></span>
+                  <span>Programação (Treinos)</span>
+                </button>
+              </nav>
+
+              <div class="sidebar-footer muted">
+                Use URLs para mídia.
+              </div>
+            </aside>
+
+            <div class="main">
+              <div class="main-header">
+                <div>
+                  <div id="viewTitle" class="view-title">Áudios</div>
+                  <div class="muted">Adicionar, editar e remover itens</div>
+                </div>
+              </div>
+
+              <section id="tab-audios" class="tab-panel">
+            <div class="panel-header">
+              <h2>Áudios</h2>
+              <button id="reloadAudios" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3 id="audioFormTitle">Novo áudio</h3>
+              <form id="audioForm" class="grid">
+                <input type="hidden" id="audioId" />
+                <label>
+                  <span>Título</span>
+                  <input id="audioTitle" type="text" required />
+                </label>
+                <label>
+                  <span>Duração (ex: 12 min)</span>
+                  <input id="audioDuration" type="text" required />
+                </label>
+                <label>
+                  <span>Categoria</span>
+                  <input id="audioCategory" type="text" required />
+                </label>
+                <label>
+                  <span>Imagem (URL)</span>
+                  <input id="audioImageUrl" type="url" required />
+                </label>
+                <label>
+                  <span>Áudio (URL)</span>
+                  <input id="audioUrl" type="url" required />
+                </label>
+                <label class="full">
+                  <span>Descrição (opcional)</span>
+                  <textarea id="audioDescription" rows="3"></textarea>
+                </label>
+
+                <div class="row">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="audioCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="audioMsg" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Categoria</th>
+                      <th>Duração</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audiosTbody"></tbody>
+                </table>
+              </div>
+            </div>
+              </section>
+
+              <section id="tab-treinos" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Treinos</h2>
+              <button id="reloadTreinos" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3 id="treinoFormTitle">Novo treino</h3>
+              <form id="treinoForm" class="grid">
+                <input type="hidden" id="treinoId" />
+                <label>
+                  <span>Título</span>
+                  <input id="treinoTitulo" type="text" required />
+                </label>
+                <label>
+                  <span>Categoria</span>
+                  <select id="treinoCategoriaSelect" class="select" required></select>
+                </label>
+                <label id="treinoCategoriaNovaWrap" class="hidden">
+                  <span>Nova categoria</span>
+                  <input id="treinoCategoriaNova" type="text" />
+                </label>
+                <label>
+                  <span>Nível (Iniciante/Intermediário/Avançado)</span>
+                  <input id="treinoNivel" type="text" required />
+                </label>
+                <label>
+                  <span>Duração (ex: 25 min)</span>
+                  <input id="treinoDuracao" type="text" required />
+                </label>
+                <label>
+                  <span>Vídeo (URL)</span>
+                  <input id="treinoVideoUrl" type="url" required />
+                </label>
+                <label>
+                  <span>Thumbnail (URL)</span>
+                  <input id="treinoThumbUrl" type="url" required />
+                </label>
+
+                <div class="row">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="treinoCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="treinoMsg" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Nível</th>
+                      <th>Categoria</th>
+                      <th>Duração</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="treinosTbody"></tbody>
+                </table>
+              </div>
+            </div>
+              </section>
+
+              <section id="tab-home" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Home (Cards)</h2>
+              <button id="reloadHomeCards" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3 id="homeCardFormTitle">Novo card</h3>
+              <form id="homeCardForm" class="grid">
+                <input type="hidden" id="homeCardId" />
+
+                <label>
+                  <span>Título</span>
+                  <input id="homeTitle" type="text" required />
+                </label>
+
+                <label>
+                  <span>Descrição</span>
+                  <input id="homeDesc" type="text" required />
+                </label>
+
+                <label>
+                  <span>Ícone (Material Symbols)</span>
+                  <input id="homeIcon" type="text" placeholder="fitness_center" required />
+                </label>
+
+                <label>
+                  <span>Tela (AppScreen)</span>
+                  <input id="homeScreen" type="text" placeholder="TREINOS" required />
+                </label>
+
+                <label>
+                  <span>Ordem</span>
+                  <input id="homeSortOrder" type="number" value="0" />
+                </label>
+
+                <label class="checkbox">
+                  <input id="homeIsActive" type="checkbox" checked />
+                  <span>Ativo</span>
+                </label>
+
+                <div class="row full">
+                  <button class="btn btn-primary" type="submit">Salvar</button>
+                  <button id="homeCancel" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+                <p id="homeMsg" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Lista</h3>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Screen</th>
+                      <th>Ícone</th>
+                      <th>Ordem</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="homeCardsTbody"></tbody>
+                </table>
+              </div>
+            </div>
+              </section>
+
+              <section id="tab-programacao" class="tab-panel hidden">
+            <div class="panel-header">
+              <h2>Programação (Treinos)</h2>
+              <button id="reloadProgramacao" class="btn btn-secondary">Atualizar</button>
+            </div>
+
+            <div class="card">
+              <h3>Treinos por dia da semana</h3>
+              <p class="muted">Selecione múltiplos treinos para cada dia. Segure Ctrl para selecionar vários.</p>
+
+              <form id="programacaoForm" class="grid">
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Segunda-feira</span>
+                    <span class="day-number">(1)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-1')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-1" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Terça-feira</span>
+                    <span class="day-number">(2)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-2')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-2" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Quarta-feira</span>
+                    <span class="day-number">(3)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-3')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-3" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Quinta-feira</span>
+                    <span class="day-number">(4)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-4')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-4" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Sexta-feira</span>
+                    <span class="day-number">(5)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-5')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-5" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Sábado</span>
+                    <span class="day-number">(6)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-6')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-6" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="day-programming">
+                  <div class="day-header">
+                    <span class="day-name">Domingo</span>
+                    <span class="day-number">(7)</span>
+                  </div>
+                  <div class="custom-dropdown">
+                    <button type="button" class="dropdown-trigger" onclick="toggleDropdown('prog-7')">
+                      <span>Selecione os treinos...</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="prog-7" class="dropdown-content" style="display: none;">
+                      <label><input type="checkbox" value="1"> Guia de Meditação • Iniciante</label>
+                      <label><input type="checkbox" value="2"> Treino perca de Gordura • Intermediário</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row full">
+                  <button class="btn btn-primary" type="submit">Salvar programação</button>
+                </div>
+                <p id="programacaoMsg" class="msg"></p>
+              </form>
+            </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span class="muted">Painel Admin (básico) • gerencia tabelas do Supabase</span>
+      </footer>
+    </div>
+
+    <script type="module" src="supabaseClient.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
