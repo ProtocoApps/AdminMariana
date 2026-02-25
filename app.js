@@ -685,6 +685,38 @@ audioForm.addEventListener('submit', async (e) => {
   await loadAudios();
 });
 
+// Função para testar conexão com storage
+async function testStorageConnection() {
+  try {
+    console.log('[Storage] Testando conexão com storage...');
+    
+    // Tentar listar buckets para verificar conexão
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('[Storage] Erro ao listar buckets:', bucketsError);
+      return { success: false, error: bucketsError };
+    }
+    
+    console.log('[Storage] Buckets disponíveis:', buckets);
+    
+    // Verificar se bucket 'videosTreinos' existe
+    const videosBucket = buckets.find(b => b.name === 'videosTreinos');
+    
+    if (!videosBucket) {
+      console.error('[Storage] Bucket "videosTreinos" não encontrado!');
+      return { success: false, error: 'Bucket "videosTreinos" não encontrado' };
+    }
+    
+    console.log('[Storage] Bucket "videosTreinos" encontrado:', videosBucket);
+    return { success: true, bucket: videosBucket };
+    
+  } catch (error) {
+    console.error('[Storage] Exceção ao testar storage:', error);
+    return { success: false, error };
+  }
+}
+
 // CRUD - TREINOS
 function resetTreinoForm() {
   $('treinoId').value = '';
@@ -773,6 +805,41 @@ treinoForm.addEventListener('submit', async (e) => {
     let videoUrl;
     
     if (videoFile) {
+      // Validar arquivo antes do upload
+      console.log('[Upload] Arquivo selecionado:', videoFile);
+      console.log('[Upload] Tipo:', videoFile.type);
+      console.log('[Upload] Tamanho:', videoFile.size, 'bytes');
+      
+      // Verificar se é um vídeo
+      if (!videoFile.type.startsWith('video/')) {
+        setMsg(treinoMsg, 'Por favor, selecione um arquivo de vídeo válido.', true);
+        return;
+      }
+      
+      // Verificar tamanho máximo (ex: 500MB)
+      const maxSize = 500 * 1024 * 1024; // 500MB
+      if (videoFile.size > maxSize) {
+        setMsg(treinoMsg, 'O vídeo é muito grande. Tamanho máximo: 500MB.', true);
+        return;
+      }
+      
+      // Testar conexão com storage antes do upload
+      setMsg(treinoMsg, 'Verificando conexão com storage...');
+      const storageTest = await testStorageConnection();
+      
+      if (!storageTest.success) {
+        console.error('[Upload] Falha no teste de storage:', storageTest.error);
+        
+        if (storageTest.error.message?.includes('Bucket "videosTreinos" not found')) {
+          setMsg(treinoMsg, 'Erro: Crie o bucket "videosTreinos" no painel do Supabase Storage.', true);
+        } else if (storageTest.error.message?.includes('Permission')) {
+          setMsg(treinoMsg, 'Erro: Sem permissão para acessar storage. Verifique as políticas RLS.', true);
+        } else {
+          setMsg(treinoMsg, `Erro no storage: ${storageTest.error.message || storageTest.error}`, true);
+        }
+        return;
+      }
+      
       // Se há novo arquivo, fazer upload
       setMsg(treinoMsg, 'Fazendo upload do vídeo...');
       console.log('[Upload] Iniciando upload do arquivo:', videoFile.name, 'Tamanho:', videoFile.size);
@@ -783,13 +850,19 @@ treinoForm.addEventListener('submit', async (e) => {
       const progressText = progressEl.querySelector('.progress-text');
       progressEl.classList.remove('hidden');
       
+      // Resetar progresso
+      progressFill.style.width = '0%';
+      progressText.textContent = '0%';
+      
       const fileName = `treinos/${Date.now()}-${videoFile.name}`;
       console.log('[Upload] Nome do arquivo no storage:', fileName);
       
       try {
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('videos')
+          .from('videosTreinos')
           .upload(fileName, videoFile, {
+            cacheControl: '3600',
+            upsert: false,
             onProgress: (progress) => {
               const percent = Math.round((progress.bytesTransferred / progress.totalBytes) * 100);
               console.log('[Upload] Progresso:', percent + '%', 'Transferidos:', progress.bytesTransferred, 'Total:', progress.totalBytes);
@@ -803,13 +876,23 @@ treinoForm.addEventListener('submit', async (e) => {
         if (uploadError) {
           console.error('[Upload] Erro no upload:', uploadError);
           progressEl.classList.add('hidden');
-          setMsg(treinoMsg, `Erro no upload: ${uploadError.message}`, true);
+          
+          // Tratar erros específicos
+          if (uploadError.message.includes('Bucket not found')) {
+            setMsg(treinoMsg, 'Erro: Bucket "videosTreinos" não encontrado. Configure o storage no Supabase.', true);
+          } else if (uploadError.message.includes('Permission')) {
+            setMsg(treinoMsg, 'Erro: Sem permissão para upload. Verifique as políticas do Supabase.', true);
+          } else if (uploadError.message.includes('size')) {
+            setMsg(treinoMsg, 'Erro: Arquivo muito grande. Tente um vídeo menor.', true);
+          } else {
+            setMsg(treinoMsg, `Erro no upload: ${uploadError.message}`, true);
+          }
           return;
         }
 
         // Obter URL pública do vídeo
         const { data: { publicUrl } } = supabase.storage
-          .from('videos')
+          .from('videosTreinos')
           .getPublicUrl(fileName);
         
         console.log('[Upload] URL pública gerada:', publicUrl);
