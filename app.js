@@ -685,6 +685,35 @@ audioForm.addEventListener('submit', async (e) => {
   await loadAudios();
 });
 
+// Função para debug - listar todos os buckets
+async function debugBuckets() {
+  try {
+    console.log('[DEBUG] Listando todos os buckets disponíveis...');
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+    
+    if (error) {
+      console.error('[DEBUG] Erro ao listar buckets:', error);
+      return;
+    }
+    
+    console.log('[DEBUG] Buckets encontrados:', buckets);
+    console.log('[DEBUG] Nomes dos buckets:', buckets.map(b => b.name));
+    
+    // Tentar acessar cada bucket para testar permissões
+    for (const bucket of buckets) {
+      try {
+        const { data: files } = await supabase.storage.from(bucket.name).list();
+        console.log(`[DEBUG] Bucket "${bucket.name}" - OK - Arquivos:`, files?.length || 0);
+      } catch (e) {
+        console.error(`[DEBUG] Bucket "${bucket.name}" - ERRO:`, e.message);
+      }
+    }
+    
+  } catch (error) {
+    console.error('[DEBUG] Exceção ao debugar buckets:', error);
+  }
+}
+
 // Função para testar conexão com storage
 async function testStorageConnection() {
   try {
@@ -825,6 +854,10 @@ treinoForm.addEventListener('submit', async (e) => {
       
       // Testar conexão com storage antes do upload
       setMsg(treinoMsg, 'Verificando conexão com storage...');
+      
+      // Debug: listar todos os buckets
+      await debugBuckets();
+      
       const storageTest = await testStorageConnection();
       
       if (!storageTest.success) {
