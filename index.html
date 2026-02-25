@@ -54,11 +54,11 @@
                     <div id="loginPanel" class="form-panel-simple active">
                       <form id="loginForm" class="form-simple">
                         <div class="input-group">
-                          <input id="loginEmail" type="email" required />
+                          <input id="loginEmail" type="email" placeholder=" " required />
                           <label for="loginEmail">Email</label>
                         </div>
                         <div class="input-group">
-                          <input id="loginPassword" type="password" required />
+                          <input id="loginPassword" type="password" placeholder=" " required />
                           <label for="loginPassword">Senha</label>
                         </div>
                         <div class="form-options-simple">
@@ -78,15 +78,15 @@
                     <div id="signupPanel" class="form-panel-simple">
                       <form id="signupForm" class="form-simple">
                         <div class="input-group">
-                          <input id="signupEmail" type="email" required />
+                          <input id="signupEmail" type="email" placeholder=" " required />
                           <label for="signupEmail">Email</label>
                         </div>
                         <div class="input-group">
-                          <input id="signupPassword" type="password" minlength="6" required />
+                          <input id="signupPassword" type="password" minlength="6" placeholder=" " required />
                           <label for="signupPassword">Senha</label>
                         </div>
                         <div class="input-group">
-                          <input id="confirmPassword" type="password" required />
+                          <input id="confirmPassword" type="password" placeholder=" " required />
                           <label for="confirmPassword">Confirmar senha</label>
                         </div>
                         <button class="btn-secondary-simple" type="submit">
@@ -97,13 +97,7 @@
                     </div>
                   </div>
 
-                  <div class="auth-info-simple">
-                    <div class="info-badge">
-                      <span class="info-icon">�</span>
-                      <span>Conexão segura via Supabase</span>
-                    </div>
-                  </div>
-
+                  
                   <div id="authMsg" class="auth-message-simple"></div>
                 </div>
               </div>
@@ -283,8 +277,18 @@
                   <input id="treinoDuracao" type="text" required />
                 </label>
                 <label>
-                  <span>Vídeo (URL)</span>
-                  <input id="treinoVideoUrl" type="url" required />
+                  <span>Vídeo (Upload do arquivo)</span>
+                  <input id="treinoVideoFile" type="file" accept="video/*" />
+                  <div class="muted" style="font-size: 12px; margin-top: 4px;">
+                    Novos treinos: selecione um arquivo de vídeo. 
+                    Editando: deixe em branco para manter o vídeo atual.
+                  </div>
+                  <div id="uploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                      <div class="progress-fill"></div>
+                    </div>
+                    <span class="progress-text">0%</span>
+                  </div>
                 </label>
                 <label>
                   <span>Thumbnail (URL)</span>

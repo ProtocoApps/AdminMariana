@@ -266,6 +266,39 @@ input, textarea {
   width: 100%;
 }
 
+/* Estilos para barra de progresso de upload */
+.upload-progress {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  display: block;
+}
+
 .dropdown-trigger {
   width: 100%;
   padding: 12px 14px;
@@ -480,107 +513,113 @@ body:has(#authView:not(.hidden)) .footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 40px;
+  background: var(--bg);
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .auth-form-card {
   width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-  padding: 40px;
-  border: 1px solid rgba(0,0,0,0.05);
+  max-width: 380px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 32px;
+  backdrop-filter: blur(20px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .auth-header-simple {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .brand-simple {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .logo-simple {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: linear-gradient(135deg, var(--primary), rgba(128,0,32,0.8));
   display: grid;
   place-items: center;
   font-weight: 900;
-  font-size: 18px;
+  font-size: 16px;
   color: #fff;
-  box-shadow: 0 8px 20px rgba(128,0,32,0.25);
+  box-shadow: 0 6px 16px rgba(128,0,32,0.25);
 }
 
 .brand-text h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
-  color: #1a202c;
+  color: var(--text);
   letter-spacing: -0.5px;
 }
 
 .brand-text p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #64748b;
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
   font-weight: 500;
 }
 
 .auth-welcome {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .auth-welcome h2 {
-  margin: 0 0 8px;
-  font-size: 28px;
+  margin: 0 0 6px;
+  font-size: 22px;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text);
   letter-spacing: -0.5px;
 }
 
 .auth-welcome p {
   margin: 0;
-  font-size: 15px;
-  color: #64748b;
-  line-height: 1.5;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .auth-tabs-simple {
   display: flex;
   gap: 8px;
-  margin-bottom: 32px;
-  background: #f1f5f9;
+  margin-bottom: 20px;
+  background: rgba(0,0,0,0.2);
   padding: 4px;
   border-radius: 12px;
 }
 
 .auth-tab-simple {
   flex: 1;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--muted);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s ease;
 }
 
 .auth-tab-simple.active {
-  background: #ffffff;
-  color: #1a202c;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(128,0,32,0.3);
 }
 
 .auth-tab-simple:hover:not(.active) {
-  color: #475569;
+  color: var(--text);
 }
 
 .form-panel-simple {
@@ -594,7 +633,7 @@ body:has(#authView:not(.hidden)) .footer {
 .form-simple {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .input-group {
@@ -603,38 +642,37 @@ body:has(#authView:not(.hidden)) .footer {
 
 .input-group input {
   width: 100%;
-  padding: 16px 20px;
-  border: 2px solid #e2e8f0;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
   border-radius: 12px;
-  background: #ffffff;
-  color: #1a202c;
+  background: rgba(0,0,0,0.3) !important;
+  color: var(--text) !important;
   outline: none;
   font-size: 15px;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.input-group input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(128,0,32,0.1);
+/* Forçar cores específicas para inputs de autenticação */
+#loginEmail, #loginPassword, #signupEmail, #signupPassword, #confirmPassword {
+  background: rgba(0,0,0,0.4) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label {
-  top: -10px;
-  left: 12px;
-  font-size: 12px;
-  color: var(--primary);
-  background: #ffffff;
-  padding: 0 8px;
+#loginEmail:focus, #loginPassword:focus, #signupEmail:focus, #signupPassword:focus, #confirmPassword:focus {
+  background: rgba(0,0,0,0.5) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
 }
 
-.input-group label {
+/* Forçar cores das labels de autenticação - sem mudar posição */
+#loginEmail + label, #loginPassword + label, #signupEmail + label, #signupPassword + label, #confirmPassword + label {
+  color: rgba(255, 255, 255, 0.7) !important;
   position: absolute;
   top: 50%;
-  left: 20px;
+  left: 18px;
   transform: translateY(-50%);
-  color: #94a3b8;
   font-size: 15px;
   font-weight: 500;
   pointer-events: none;
@@ -642,11 +680,20 @@ body:has(#authView:not(.hidden)) .footer {
   z-index: 1;
 }
 
-.form-options-simple {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: -8px 0;
+.input-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(128,0,32,0.15);
+  background: rgba(0,0,0,0.4);
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: var(--bg);
+  padding: 0 8px;
 }
 
 .checkbox-simple {
@@ -654,7 +701,7 @@ body:has(#authView:not(.hidden)) .footer {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #475569;
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -679,10 +726,10 @@ body:has(#authView:not(.hidden)) .footer {
 .btn-primary-simple,
 .btn-secondary-simple {
   width: 100%;
-  padding: 16px 24px;
+  padding: 14px 20px;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -690,7 +737,7 @@ body:has(#authView:not(.hidden)) .footer {
   justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .btn-primary-simple {
@@ -706,13 +753,13 @@ body:has(#authView:not(.hidden)) .footer {
 }
 
 .btn-secondary-simple {
-  background: #f1f5f9;
-  color: #475569;
-  border: 2px solid #e2e8f0;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border: 2px solid var(--border);
 }
 
 .btn-secondary-simple:hover {
-  background: #e2e8f0;
+  background: rgba(255,255,255,0.1);
   transform: translateY(-1px);
 }
 
@@ -726,7 +773,7 @@ body:has(#authView:not(.hidden)) .footer {
 }
 
 .auth-info-simple {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .info-badge {
@@ -734,11 +781,11 @@ body:has(#authView:not(.hidden)) .footer {
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
   border-radius: 8px;
   font-size: 13px;
-  color: #166534;
+  color: rgba(34,197,94,0.9);
   font-weight: 500;
 }
 
@@ -747,26 +794,26 @@ body:has(#authView:not(.hidden)) .footer {
 }
 
 .auth-message-simple {
-  margin-top: 16px;
-  padding: 12px 16px;
+  margin-top: 12px;
+  padding: 10px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
   font-weight: 500;
   display: none;
 }
 
 .auth-message-simple.error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: rgba(239,68,68,0.9);
   display: block;
 }
 
 .auth-message-simple.success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
+  color: rgba(34,197,94,0.9);
   display: block;
 }
 

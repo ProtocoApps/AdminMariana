@@ -694,8 +694,19 @@ function resetTreinoForm() {
   setNovaCategoriaVisible(false);
   $('treinoNivel').value = '';
   $('treinoDuracao').value = '';
-  $('treinoVideoUrl').value = '';
+  $('treinoVideoFile').value = '';
   $('treinoThumbUrl').value = '';
+  
+  // Esconder barra de progresso
+  const progressEl = $('uploadProgress');
+  if (progressEl) {
+    progressEl.classList.add('hidden');
+    const progressFill = progressEl.querySelector('.progress-fill');
+    const progressText = progressEl.querySelector('.progress-text');
+    if (progressFill) progressFill.style.width = '0%';
+    if (progressText) progressText.textContent = '0%';
+  }
+  
   treinoFormTitle.textContent = 'Novo treino';
   setMsg(treinoMsg, '');
 }
@@ -752,30 +763,90 @@ treinoForm.addEventListener('submit', async (e) => {
     setMsg(treinoMsg, 'Selecione uma categoria ou digite uma nova categoria.', true);
     return;
   }
-  const payload = {
-    titulo: $('treinoTitulo').value.trim(),
-    categoria: categoriaValue,
-    nivel: $('treinoNivel').value.trim(),
-    duracao: $('treinoDuracao').value.trim(),
-    video_url: $('treinoVideoUrl').value.trim(),
-    thumbnail_url: $('treinoThumbUrl').value.trim(),
-  };
 
+  // Obter o arquivo de vídeo
+  const videoFile = $('treinoVideoFile').files[0];
+  
   setMsg(treinoMsg, 'Salvando...');
 
-  const query = id
-    ? supabase.from('videostreinos').update({ ...payload }).eq('id', id)
-    : supabase.from('videostreinos').insert([{ ...payload }]);
+  try {
+    let videoUrl;
+    
+    if (videoFile) {
+      // Se há novo arquivo, fazer upload
+      setMsg(treinoMsg, 'Fazendo upload do vídeo...');
+      
+      // Mostrar barra de progresso
+      const progressEl = $('uploadProgress');
+      const progressFill = progressEl.querySelector('.progress-fill');
+      const progressText = progressEl.querySelector('.progress-text');
+      progressEl.classList.remove('hidden');
+      
+      const fileName = `treinos/${Date.now()}-${videoFile.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, videoFile, {
+          onProgress: (progress) => {
+            const percent = Math.round((progress.bytesTransferred / progress.totalBytes) * 100);
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${percent}%`;
+          }
+        });
 
-  const { error } = await query;
-  if (error) {
-    setMsg(treinoMsg, error.message, true);
-    return;
+      if (uploadError) {
+        progressEl.classList.add('hidden');
+        setMsg(treinoMsg, `Erro no upload: ${uploadError.message}`, true);
+        return;
+      }
+
+      // Obter URL pública do vídeo
+      const { data: { publicUrl } } = supabase.storage
+        .from('videos')
+        .getPublicUrl(fileName);
+      
+      videoUrl = publicUrl;
+      progressEl.classList.add('hidden');
+    } else if (id) {
+      // Se está editando e não há novo arquivo, buscar URL atual
+      const { data: currentData } = await supabase.from('videostreinos')
+        .select('video_url')
+        .eq('id', id)
+        .single();
+      
+      videoUrl = currentData?.video_url;
+    } else {
+      // Se é novo treino e não há arquivo, erro
+      setMsg(treinoMsg, 'Por favor, selecione um arquivo de vídeo.', true);
+      return;
+    }
+
+    const payload = {
+      titulo: $('treinoTitulo').value.trim(),
+      categoria: categoriaValue,
+      nivel: $('treinoNivel').value.trim(),
+      duracao: $('treinoDuracao').value.trim(),
+      video_url: videoUrl,
+      thumbnail_url: $('treinoThumbUrl').value.trim(),
+    };
+
+    setMsg(treinoMsg, 'Salvando informações...');
+
+    const query = id
+      ? supabase.from('videostreinos').update({ ...payload }).eq('id', id)
+      : supabase.from('videostreinos').insert([{ ...payload }]);
+
+    const { error } = await query;
+    if (error) {
+      setMsg(treinoMsg, error.message, true);
+      return;
+    }
+
+    setMsg(treinoMsg, 'Vídeo salvo com sucesso!');
+    resetTreinoForm();
+    await loadTreinos();
+  } catch (error) {
+    setMsg(treinoMsg, `Erro: ${error.message}`, true);
   }
-
-  setMsg(treinoMsg, 'Salvo!');
-  resetTreinoForm();
-  await loadTreinos();
 });
 
 // AÇÕES - Delegation
@@ -845,9 +916,8 @@ adminView.addEventListener('click', async (e) => {
     await loadTreinoCategorias(data.categoria || '');
     $('treinoNivel').value = data.nivel || '';
     $('treinoDuracao').value = data.duracao || '';
-    $('treinoVideoUrl').value = data.video_url || '';
     $('treinoThumbUrl').value = data.thumbnail_url || '';
-    treinoFormTitle.textContent = 'Editar treino';
+    treinoFormTitle.textContent = 'Editar treino (mantenha o vídeo atual ou selecione novo)';
     setActiveView('treinos');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
