@@ -685,6 +685,43 @@ audioForm.addEventListener('submit', async (e) => {
   await loadAudios();
 });
 
+// Função para criar bucket se não existir
+async function ensureBucketExists() {
+  try {
+    console.log('[Bucket] Verificando/criando bucket "videosTreinos"...');
+    
+    // Primeiro, tentar criar o bucket (não dá erro se já existir)
+    const { data, error } = await supabase.storage.createBucket('videosTreinos', {
+      public: true,
+      allowedMimeTypes: ['video/*'],
+      fileSizeLimit: 524288000, // 500MB
+    });
+    
+    if (error && !error.message.includes('already exists')) {
+      console.error('[Bucket] Erro ao criar bucket:', error);
+      return { success: false, error };
+    }
+    
+    console.log('[Bucket] Bucket "videosTreinos" garantido!');
+    
+    // Configurar política pública para leitura
+    const { error: policyError } = await supabase.storage.from('videosTreinos').createPolicy('Public Access', {
+      roles: ['anon', 'authenticated'],
+      allowed_operations: ['SELECT'],
+    });
+    
+    if (policyError && !policyError.message.includes('already exists')) {
+      console.warn('[Bucket] Aviso ao criar política:', policyError);
+    }
+    
+    return { success: true };
+    
+  } catch (error) {
+    console.error('[Bucket] Exceção ao garantir bucket:', error);
+    return { success: false, error };
+  }
+}
+
 // Função para debug - listar todos os buckets
 async function debugBuckets() {
   try {
@@ -854,6 +891,13 @@ treinoForm.addEventListener('submit', async (e) => {
       
       // Testar conexão com storage antes do upload
       setMsg(treinoMsg, 'Verificando conexão com storage...');
+      
+      // Garantir que o bucket existe
+      const bucketResult = await ensureBucketExists();
+      if (!bucketResult.success) {
+        setMsg(treinoMsg, `Erro ao configurar bucket: ${bucketResult.error.message}`, true);
+        return;
+      }
       
       // Debug: listar todos os buckets
       await debugBuckets();
