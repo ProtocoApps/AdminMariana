@@ -666,7 +666,7 @@ body:has(#authView:not(.hidden)) .footer {
   color: #ffffff !important;
 }
 
-/* Forçar cores das labels de autenticação - sem mudar posição */
+/* Forçar cores das labels de autenticação - estado inicial */
 #loginEmail + label, #loginPassword + label, #signupEmail + label, #signupPassword + label, #confirmPassword + label {
   color: rgba(255, 255, 255, 0.7) !important;
   position: absolute;
@@ -678,6 +678,21 @@ body:has(#authView:not(.hidden)) .footer {
   pointer-events: none;
   transition: all 0.2s ease;
   z-index: 1;
+}
+
+/* Forçar labels flutuantes para campos de autenticação quando em foco ou com conteúdo */
+#loginEmail:focus + label, #loginEmail:not(:placeholder-shown) + label,
+#loginPassword:focus + label, #loginPassword:not(:placeholder-shown) + label,
+#signupEmail:focus + label, #signupEmail:not(:placeholder-shown) + label,
+#signupPassword:focus + label, #signupPassword:not(:placeholder-shown) + label,
+#confirmPassword:focus + label, #confirmPassword:not(:placeholder-shown) + label {
+  top: -10px !important;
+  left: 12px !important;
+  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: var(--bg) !important;
+  padding: 0 8px !important;
+  transform: none !important;
 }
 
 .input-group input:focus {
