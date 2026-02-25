@@ -694,7 +694,7 @@ async function ensureBucketExists() {
     const { data, error } = await supabase.storage.createBucket('videosTreinos', {
       public: true,
       allowedMimeTypes: ['video/*'],
-      fileSizeLimit: 524288000, // 500MB
+      fileSizeLimit: 2147483648, // 2GB
     });
     
     if (error && !error.message.includes('already exists')) {
@@ -882,10 +882,10 @@ treinoForm.addEventListener('submit', async (e) => {
         return;
       }
       
-      // Verificar tamanho máximo (ex: 500MB)
-      const maxSize = 500 * 1024 * 1024; // 500MB
+      // Verificar tamanho máximo (ex: 2GB)
+      const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
       if (videoFile.size > maxSize) {
-        setMsg(treinoMsg, 'O vídeo é muito grande. Tamanho máximo: 500MB.', true);
+        setMsg(treinoMsg, 'O vídeo é muito grande. Tamanho máximo: 2GB.', true);
         return;
       }
       
