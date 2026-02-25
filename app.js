@@ -775,6 +775,7 @@ treinoForm.addEventListener('submit', async (e) => {
     if (videoFile) {
       // Se há novo arquivo, fazer upload
       setMsg(treinoMsg, 'Fazendo upload do vídeo...');
+      console.log('[Upload] Iniciando upload do arquivo:', videoFile.name, 'Tamanho:', videoFile.size);
       
       // Mostrar barra de progresso
       const progressEl = $('uploadProgress');
@@ -783,29 +784,43 @@ treinoForm.addEventListener('submit', async (e) => {
       progressEl.classList.remove('hidden');
       
       const fileName = `treinos/${Date.now()}-${videoFile.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('videos')
-        .upload(fileName, videoFile, {
-          onProgress: (progress) => {
-            const percent = Math.round((progress.bytesTransferred / progress.totalBytes) * 100);
-            progressFill.style.width = `${percent}%`;
-            progressText.textContent = `${percent}%`;
-          }
-        });
+      console.log('[Upload] Nome do arquivo no storage:', fileName);
+      
+      try {
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('videos')
+          .upload(fileName, videoFile, {
+            onProgress: (progress) => {
+              const percent = Math.round((progress.bytesTransferred / progress.totalBytes) * 100);
+              console.log('[Upload] Progresso:', percent + '%', 'Transferidos:', progress.bytesTransferred, 'Total:', progress.totalBytes);
+              progressFill.style.width = `${percent}%`;
+              progressText.textContent = `${percent}%`;
+            }
+          });
 
-      if (uploadError) {
+        console.log('[Upload] Upload concluído. Data:', uploadData, 'Error:', uploadError);
+
+        if (uploadError) {
+          console.error('[Upload] Erro no upload:', uploadError);
+          progressEl.classList.add('hidden');
+          setMsg(treinoMsg, `Erro no upload: ${uploadError.message}`, true);
+          return;
+        }
+
+        // Obter URL pública do vídeo
+        const { data: { publicUrl } } = supabase.storage
+          .from('videos')
+          .getPublicUrl(fileName);
+        
+        console.log('[Upload] URL pública gerada:', publicUrl);
+        videoUrl = publicUrl;
         progressEl.classList.add('hidden');
-        setMsg(treinoMsg, `Erro no upload: ${uploadError.message}`, true);
+      } catch (uploadException) {
+        console.error('[Upload] Exceção durante upload:', uploadException);
+        progressEl.classList.add('hidden');
+        setMsg(treinoMsg, `Erro excepcional no upload: ${uploadException.message}`, true);
         return;
       }
-
-      // Obter URL pública do vídeo
-      const { data: { publicUrl } } = supabase.storage
-        .from('videos')
-        .getPublicUrl(fileName);
-      
-      videoUrl = publicUrl;
-      progressEl.classList.add('hidden');
     } else if (id) {
       // Se está editando e não há novo arquivo, buscar URL atual
       const { data: currentData } = await supabase.from('videostreinos')
