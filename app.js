@@ -509,10 +509,10 @@ async function loadProgramacao() {
   setMsg(programacaoMsg, 'Carregando...');
 
   // 1) carregar treinos
+  console.log('[loadProgramacao] Buscando treinos para programação...');
   const { data: treinos, error: treinosError } = await supabase
-    .from('treinos')
+    .from('videostreinos')
     .select('id, titulo, categoria, nivel, duracao')
-    .eq('is_active', true)
     .order('created_at', { ascending: false });
 
   if (treinosError) {
@@ -520,10 +520,23 @@ async function loadProgramacao() {
     return;
   }
 
+  console.log('[loadProgramacao] Treinos encontrados:', treinos);
+
+  // Filtrar apenas treinos válidos
+  const treinosValidos = (treinos || []).filter(t => {
+    const isValid = t && t.titulo && t.categoria;
+    if (!isValid) {
+      console.log('[loadProgramacao] Treino inválido filtrado:', t);
+    }
+    return isValid;
+  });
+
+  console.log('[loadProgramacao] Treinos válidos para programação:', treinosValidos);
+
   // preencher selects usando função original
   for (const s of progSelects) {
     if (!s.el) continue;
-    fillSelectOptions(s.el, treinos);
+    fillSelectOptions(s.el, treinosValidos);
   }
 
   // 2) carregar programação atual
@@ -537,9 +550,19 @@ async function loadProgramacao() {
     return;
   }
 
-  // selecionar múltiplos treinos por dia
+  // selecionar múltiplos treinos por dia (apenas treinos válidos)
   const treinosPorDia = new Map();
+  const treinosValidosIds = new Set(treinosValidos.map(t => t.id));
+  
   progRows.forEach(row => {
+    // Verificar se o treino ainda existe
+    if (!treinosValidosIds.has(row.treino_id)) {
+      console.log('[loadProgramacao] Removendo programação de treino inexistente:', row.treino_id);
+      // Remover programação inválida
+      supabase.from('treinos_programacao').delete().eq('treino_id', row.treino_id);
+      return;
+    }
+    
     if (!treinosPorDia.has(row.dia_semana)) {
       treinosPorDia.set(row.dia_semana, []);
     }
