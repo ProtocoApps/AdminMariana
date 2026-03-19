@@ -835,23 +835,38 @@ async function loadTreinos() {
 
   await loadTreinoCategorias();
 
+  console.log('[loadTreinos] Buscando treinos do banco...');
   const { data, error } = await supabase
     .from('videostreinos')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (error) {
+    console.error('[loadTreinos] Erro ao buscar treinos:', error);
     treinosTbody.innerHTML = '';
     setMsg(treinoMsg, error.message, true);
     return;
   }
 
-  if (!data || data.length === 0) {
+  console.log('[loadTreinos] Dados recebidos:', data);
+
+  // Filtrar apenas treinos válidos (com título e categoria)
+  const treinosValidos = (data || []).filter(t => {
+    const isValid = t && t.titulo && t.categoria;
+    if (!isValid) {
+      console.log('[loadTreinos] Treino inválido filtrado:', t);
+    }
+    return isValid;
+  });
+
+  console.log('[loadTreinos] Treinos válidos após filtro:', treinosValidos);
+
+  if (!treinosValidos || treinosValidos.length === 0) {
     treinosTbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum treino cadastrado.</td></tr>';
     return;
   }
 
-  treinosTbody.innerHTML = data
+  treinosTbody.innerHTML = treinosValidos
     .map((t) => {
       return `
         <tr>
@@ -867,6 +882,22 @@ async function loadTreinos() {
       `;
     })
     .join('');
+
+  console.log(`[loadTreinos] ${treinosValidos.length} treinos carregados com sucesso`);
+  
+  // Verificar se há treinos inválidos no banco e limpar
+  if (data && data.length > treinosValidos.length) {
+    const treinosInvalidos = data.filter(t => !t || !t.titulo || !t.categoria);
+    if (treinosInvalidos.length > 0) {
+      console.log('[loadTreinos] Limpando treinos inválidos do banco:', treinosInvalidos);
+      for (const treinoInvalido of treinosInvalidos) {
+        if (treinoInvalido && treinoInvalido.id) {
+          await supabase.from('videostreinos').delete().eq('id', treinoInvalido.id);
+          console.log('[loadTreinos] Treino inválido removido:', treinoInvalido.id);
+        }
+      }
+    }
+  }
 }
 
 treinoForm.addEventListener('submit', async (e) => {
