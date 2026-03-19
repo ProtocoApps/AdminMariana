@@ -144,6 +144,60 @@ const progSelects = [1, 2, 3, 4, 5, 6, 7].map((d) => ({
   el: $(`prog-${d}`),
 }));
 
+function updateProgramacaoTrigger(dropdownEl) {
+  if (!dropdownEl) return;
+  const trigger = dropdownEl.previousElementSibling;
+  if (!trigger) return;
+  const textEl = trigger.querySelector('span');
+  if (!textEl) return;
+
+  const checked = Array.from(dropdownEl.querySelectorAll('input[type="checkbox"]:checked'));
+  if (checked.length === 0) {
+    textEl.textContent = 'Selecione os treinos...';
+    return;
+  }
+
+  const labels = checked
+    .map((input) => input.parentElement?.textContent?.trim())
+    .filter(Boolean);
+
+  textEl.textContent = labels.join(', ');
+}
+
+function fillProgramacaoOptions(dropdownEl, treinos) {
+  if (!dropdownEl) return;
+  dropdownEl.innerHTML = '';
+
+  for (const t of treinos) {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = String(t.id);
+    input.addEventListener('change', () => updateProgramacaoTrigger(dropdownEl));
+    label.appendChild(input);
+    label.append(` ${buildTreinoOptionLabel(t)}`);
+    dropdownEl.appendChild(label);
+  }
+
+  updateProgramacaoTrigger(dropdownEl);
+}
+
+function getProgramacaoSelectedIds(dropdownEl) {
+  if (!dropdownEl) return [];
+  return Array.from(dropdownEl.querySelectorAll('input[type="checkbox"]:checked'))
+    .map((input) => input.value)
+    .filter(Boolean);
+}
+
+function setProgramacaoSelectedIds(dropdownEl, treinoIds) {
+  if (!dropdownEl) return;
+  const ids = new Set((treinoIds || []).map(String));
+  Array.from(dropdownEl.querySelectorAll('input[type="checkbox"]')).forEach((input) => {
+    input.checked = ids.has(input.value);
+  });
+  updateProgramacaoTrigger(dropdownEl);
+}
+
 function setMsg(el, text, isError = false) {
   if (!el) return;
   el.textContent = text || '';
@@ -533,10 +587,10 @@ async function loadProgramacao() {
 
   console.log('[loadProgramacao] Treinos válidos para programação:', treinosValidos);
 
-  // preencher selects usando função original
+  // preencher dropdowns usando checkboxes
   for (const s of progSelects) {
     if (!s.el) continue;
-    fillSelectOptions(s.el, treinosValidos);
+    fillProgramacaoOptions(s.el, treinosValidos);
   }
 
   // 2) carregar programação atual
@@ -554,12 +608,13 @@ async function loadProgramacao() {
   const treinosPorDia = new Map();
   const treinosValidosIds = new Set(treinosValidos.map(t => t.id));
   
+  const invalidTreinoIds = new Set();
+
   progRows.forEach(row => {
     // Verificar se o treino ainda existe
     if (!treinosValidosIds.has(row.treino_id)) {
       console.log('[loadProgramacao] Removendo programação de treino inexistente:', row.treino_id);
-      // Remover programação inválida
-      supabase.from('treinos_programacao').delete().eq('treino_id', row.treino_id);
+      invalidTreinoIds.add(row.treino_id);
       return;
     }
     
@@ -569,18 +624,15 @@ async function loadProgramacao() {
     treinosPorDia.get(row.dia_semana).push(row.treino_id);
   });
 
+  for (const treinoId of invalidTreinoIds) {
+    await supabase.from('treinos_programacao').delete().eq('treino_id', treinoId);
+  }
+
   for (const s of progSelects) {
     if (!s.el) continue;
     const treinosDoDia = treinosPorDia.get(s.dia) || [];
-    
-    // limpar seleção atual
-    Array.from(s.el.options).forEach(opt => opt.selected = false);
-    
-    // selecionar todos os treinos do dia
-    treinosDoDia.forEach(treinoId => {
-      const option = Array.from(s.el.options).find(opt => opt.value === String(treinoId));
-      if (option) option.selected = true;
-    });
+
+    setProgramacaoSelectedIds(s.el, treinosDoDia);
   }
 
   setMsg(programacaoMsg, '');
@@ -594,10 +646,8 @@ if (programacaoForm) {
     // para cada dia da semana
     for (const s of progSelects) {
       if (!s.el) continue;
-      
-      // obter opções selecionadas
-      const selectedOptions = Array.from(s.el.selectedOptions).filter(opt => opt.value);
-      const treinoIds = selectedOptions.map(opt => opt.value);
+
+      const treinoIds = getProgramacaoSelectedIds(s.el);
       
       // limpar programação existente do dia
       const { error: deleteError } = await supabase
