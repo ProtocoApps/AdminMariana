@@ -277,11 +277,11 @@
                   <input id="treinoDuracao" type="text" required />
                 </label>
                 <label>
-                  <span>Vídeo (Upload do arquivo)</span>
-                  <input id="treinoVideoFile" type="file" accept="video/*" />
+                  <span>GIF do Exercício (Upload do arquivo)</span>
+                  <input id="treinoVideoFile" type="file" accept="image/gif,image/jpeg,image/png" />
                   <div class="muted" style="font-size: 12px; margin-top: 4px;">
-                    Novos treinos: selecione um arquivo de vídeo. 
-                    Editando: deixe em branco para manter o vídeo atual.
+                    Novos treinos: selecione um GIF ou imagem do exercício. 
+                    Editando: deixe em branco para manter o arquivo atual.
                   </div>
                   <div id="uploadProgress" class="upload-progress hidden">
                     <div class="progress-bar">
@@ -291,8 +291,11 @@
                   </div>
                 </label>
                 <label>
-                  <span>Thumbnail (URL)</span>
-                  <input id="treinoThumbUrl" type="url" required />
+                  <span>Thumbnail (Upload da imagem)</span>
+                  <input id="treinoThumbFile" type="file" accept="image/jpeg,image/png,image/gif" />
+                  <div class="muted" style="font-size: 12px; margin-top: 4px;">
+                    Selecione uma imagem para a capa do treino.
+                  </div>
                 </label>
 
                 <div class="row">

@@ -235,19 +235,38 @@ async function loadTreinoCategorias(selectedValue) {
     return;
   }
   console.log('[loadTreinoCategorias] Carregando categorias…');
+  
+  // Categorias pré-definidas
+  const categoriasPredefinidas = [
+    'Glúteos',
+    'Ombro',
+    'Costa',
+    'Peito',
+    'Perna',
+    'Abdômen',
+    'Bíceps',
+    'Tríceps',
+    'Panturrilha',
+    'Antebraço'
+  ];
+  
+  // Buscar categorias existentes no banco
   const { data, error } = await supabase
     .from('videostreinos')
     .select('categoria')
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('[loadTreinoCategorias] Erro Supabase:', error);
-    fillCategoriaSelect([], selectedValue);
-    return;
+  let cats = [...categoriasPredefinidas];
+  
+  if (!error && data) {
+    const catsDoBanco = (data || []).map((r) => r?.categoria).filter(cat => cat && !categoriasPredefinidas.includes(cat));
+    cats = [...categoriasPredefinidas, ...catsDoBanco];
   }
 
-  const cats = (data || []).map((r) => r?.categoria);
-  console.log('[loadTreinoCategorias] Categorias encontradas:', cats);
+  // Remover duplicatas e manter ordem
+  cats = [...new Set(cats)];
+  
+  console.log('[loadTreinoCategorias] Categorias finais:', cats);
   fillCategoriaSelect(cats, selectedValue);
 }
 
@@ -685,39 +704,37 @@ audioForm.addEventListener('submit', async (e) => {
   await loadAudios();
 });
 
-// Função para criar bucket se não existir
-async function ensureBucketExists() {
+// Função para verificar se bucket existe (sem tentar criar)
+async function checkBucketExists() {
   try {
-    console.log('[Bucket] Verificando/criando bucket "videosTreinos"...');
+    console.log('[Bucket] Verificando se bucket "videosTreinos" existe...');
     
-    // Primeiro, tentar criar o bucket (não dá erro se já existir)
-    const { data, error } = await supabase.storage.createBucket('videosTreinos', {
-      public: true,
-      allowedMimeTypes: ['video/*'],
-      fileSizeLimit: 2147483648, // 2GB
-    });
+    // Listar buckets para verificar se videosTreinos existe
+    const { data: buckets, error } = await supabase.storage.listBuckets();
     
-    if (error && !error.message.includes('already exists')) {
-      console.error('[Bucket] Erro ao criar bucket:', error);
+    if (error) {
+      console.error('[Bucket] Erro ao listar buckets:', error);
       return { success: false, error };
     }
     
-    console.log('[Bucket] Bucket "videosTreinos" garantido!');
+    const videosBucket = buckets.find(b => b.name === 'videosTreinos');
     
-    // Configurar política pública para leitura
-    const { error: policyError } = await supabase.storage.from('videosTreinos').createPolicy('Public Access', {
-      roles: ['anon', 'authenticated'],
-      allowed_operations: ['SELECT'],
-    });
-    
-    if (policyError && !policyError.message.includes('already exists')) {
-      console.warn('[Bucket] Aviso ao criar política:', policyError);
+    if (!videosBucket) {
+      console.error('[Bucket] Bucket "videosTreinos" não encontrado!');
+      return { success: false, error: 'Bucket "videosTreinos" não encontrado' };
     }
     
-    return { success: true };
+    console.log('[Bucket] Bucket "videosTreinos" encontrado:', videosBucket);
+    console.log('[Bucket] Configurações do bucket:', {
+      public: videosBucket.public,
+      file_size_limit: videosBucket.file_size_limit,
+      allowed_mime_types: videosBucket.allowed_mime_types
+    });
+    
+    return { success: true, bucket: videosBucket };
     
   } catch (error) {
-    console.error('[Bucket] Exceção ao garantir bucket:', error);
+    console.error('[Bucket] Exceção ao verificar bucket:', error);
     return { success: false, error };
   }
 }
@@ -793,7 +810,7 @@ function resetTreinoForm() {
   $('treinoNivel').value = '';
   $('treinoDuracao').value = '';
   $('treinoVideoFile').value = '';
-  $('treinoThumbUrl').value = '';
+  $('treinoThumbFile').value = '';
   
   // Esconder barra de progresso
   const progressEl = $('uploadProgress');
@@ -862,8 +879,9 @@ treinoForm.addEventListener('submit', async (e) => {
     return;
   }
 
-  // Obter o arquivo de vídeo
+  // Obter os arquivos
   const videoFile = $('treinoVideoFile').files[0];
+  const thumbFile = $('treinoThumbFile').files[0];
   
   setMsg(treinoMsg, 'Salvando...');
 
@@ -876,49 +894,24 @@ treinoForm.addEventListener('submit', async (e) => {
       console.log('[Upload] Tipo:', videoFile.type);
       console.log('[Upload] Tamanho:', videoFile.size, 'bytes');
       
-      // Verificar se é um vídeo
-      if (!videoFile.type.startsWith('video/')) {
-        setMsg(treinoMsg, 'Por favor, selecione um arquivo de vídeo válido.', true);
+      // Verificar se é uma imagem/GIF
+      if (!videoFile.type.startsWith('image/')) {
+        setMsg(treinoMsg, 'Por favor, selecione um arquivo de imagem ou GIF válido.', true);
         return;
       }
       
-      // Verificar tamanho máximo (ex: 2GB)
-      const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
+      // Verificar tamanho máximo (50MB - limite do plano gratuito do Supabase)
+      const maxSize = 50 * 1024 * 1024; // 50MB
       if (videoFile.size > maxSize) {
-        setMsg(treinoMsg, 'O vídeo é muito grande. Tamanho máximo: 2GB.', true);
+        setMsg(treinoMsg, 'Erro: Imagem muito grande. Máximo permitido: 50MB (plano gratuito Supabase). Sua imagem: ' + (videoFile.size / 1024 / 1024).toFixed(1) + 'MB', true);
         return;
       }
       
-      // Testar conexão com storage antes do upload
-      setMsg(treinoMsg, 'Verificando conexão com storage...');
+      // Sua imagem deve funcionar! 45MB < 50MB
+      console.log('[Upload] Sua imagem está dentro do limite!');
       
-      // Garantir que o bucket existe
-      const bucketResult = await ensureBucketExists();
-      if (!bucketResult.success) {
-        setMsg(treinoMsg, `Erro ao configurar bucket: ${bucketResult.error.message}`, true);
-        return;
-      }
-      
-      // Debug: listar todos os buckets
-      await debugBuckets();
-      
-      const storageTest = await testStorageConnection();
-      
-      if (!storageTest.success) {
-        console.error('[Upload] Falha no teste de storage:', storageTest.error);
-        
-        if (storageTest.error.message?.includes('Bucket "videosTreinos" not found')) {
-          setMsg(treinoMsg, 'Erro: Crie o bucket "videosTreinos" no painel do Supabase Storage.', true);
-        } else if (storageTest.error.message?.includes('Permission')) {
-          setMsg(treinoMsg, 'Erro: Sem permissão para acessar storage. Verifique as políticas RLS.', true);
-        } else {
-          setMsg(treinoMsg, `Erro no storage: ${storageTest.error.message || storageTest.error}`, true);
-        }
-        return;
-      }
-      
-      // Se há novo arquivo, fazer upload
-      setMsg(treinoMsg, 'Fazendo upload do vídeo...');
+      // Upload direto - bucket já existe manualmente
+      setMsg(treinoMsg, 'Fazendo upload do GIF/imagem...');
       console.log('[Upload] Iniciando upload do arquivo:', videoFile.name, 'Tamanho:', videoFile.size);
       
       // Mostrar barra de progresso
@@ -935,6 +928,10 @@ treinoForm.addEventListener('submit', async (e) => {
       console.log('[Upload] Nome do arquivo no storage:', fileName);
       
       try {
+        console.log('[Upload] Tentando upload para bucket: videosTreinos');
+        console.log('[Upload] Arquivo:', fileName);
+        console.log('[Upload] Tamanho:', videoFile.size);
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('videosTreinos')
           .upload(fileName, videoFile, {
@@ -991,8 +988,57 @@ treinoForm.addEventListener('submit', async (e) => {
       videoUrl = currentData?.video_url;
     } else {
       // Se é novo treino e não há arquivo, erro
-      setMsg(treinoMsg, 'Por favor, selecione um arquivo de vídeo.', true);
+      setMsg(treinoMsg, 'Por favor, selecione um arquivo de imagem ou GIF.', true);
       return;
+    }
+
+    // Upload da thumbnail (se houver)
+    let thumbnailUrl = ''; // Inicializa vazia
+    if (thumbFile) {
+      setMsg(treinoMsg, 'Fazendo upload da thumbnail...');
+      
+      // Validar thumbnail
+      if (!thumbFile.type.startsWith('image/')) {
+        setMsg(treinoMsg, 'Por favor, selecione uma imagem válida para a thumbnail.', true);
+        return;
+      }
+      
+      // Verificar tamanho da thumbnail (10MB max)
+      const thumbMaxSize = 10 * 1024 * 1024; // 10MB
+      if (thumbFile.size > thumbMaxSize) {
+        setMsg(treinoMsg, 'Thumbnail muito grande. Máximo permitido: 10MB.', true);
+        return;
+      }
+      
+      try {
+        const thumbFileName = `thumbnails/${Date.now()}-${thumbFile.name}`;
+        console.log('[Upload] Nome da thumbnail:', thumbFileName);
+        
+        const { data: thumbUploadData, error: thumbUploadError } = await supabase.storage
+          .from('videosTreinos')
+          .upload(thumbFileName, thumbFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (thumbUploadError) {
+          console.error('[Upload] Erro no upload da thumbnail:', thumbUploadError);
+          setMsg(treinoMsg, `Erro no upload da thumbnail: ${thumbUploadError.message}`, true);
+          return;
+        }
+
+        // Obter URL pública da thumbnail
+        const { data: { publicUrl: thumbPublicUrl } } = supabase.storage
+          .from('videosTreinos')
+          .getPublicUrl(thumbFileName);
+        
+        console.log('[Upload] URL pública da thumbnail:', thumbPublicUrl);
+        thumbnailUrl = thumbPublicUrl;
+      } catch (thumbException) {
+        console.error('[Upload] Exceção no upload da thumbnail:', thumbException);
+        setMsg(treinoMsg, `Erro no upload da thumbnail: ${thumbException.message}`, true);
+        return;
+      }
     }
 
     const payload = {
@@ -1001,7 +1047,7 @@ treinoForm.addEventListener('submit', async (e) => {
       nivel: $('treinoNivel').value.trim(),
       duracao: $('treinoDuracao').value.trim(),
       video_url: videoUrl,
-      thumbnail_url: $('treinoThumbUrl').value.trim(),
+      thumbnail_url: thumbnailUrl,
     };
 
     setMsg(treinoMsg, 'Salvando informações...');
@@ -1091,8 +1137,8 @@ adminView.addEventListener('click', async (e) => {
     await loadTreinoCategorias(data.categoria || '');
     $('treinoNivel').value = data.nivel || '';
     $('treinoDuracao').value = data.duracao || '';
-    $('treinoThumbUrl').value = data.thumbnail_url || '';
-    treinoFormTitle.textContent = 'Editar treino (mantenha o vídeo atual ou selecione novo)';
+    // Não preenche thumbnail URL pois agora é upload
+    treinoFormTitle.textContent = 'Editar treino (mantenha o GIF/imagem atual ou selecione novo)';
     setActiveView('treinos');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
