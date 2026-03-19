@@ -924,7 +924,15 @@ treinoForm.addEventListener('submit', async (e) => {
       progressFill.style.width = '0%';
       progressText.textContent = '0%';
       
-      const fileName = `treinos/${Date.now()}-${videoFile.name}`;
+      // Sanitizar nome do arquivo - remover espaços e caracteres especiais
+      const sanitizedName = videoFile.name
+        .replace(/[^a-zA-Z0-9.-]/g, '_')  // Substituir caracteres especiais por _
+        .replace(/_{2,}/g, '_')           // Remover underscores duplicados
+        .replace(/^_|_$/g, '');           // Remover underscores no início/fim
+      
+      const fileName = `treinos/${Date.now()}-${sanitizedName}`;
+      console.log('[Upload] Nome original:', videoFile.name);
+      console.log('[Upload] Nome sanitizado:', sanitizedName);
       console.log('[Upload] Nome do arquivo no storage:', fileName);
       
       try {
@@ -1011,8 +1019,16 @@ treinoForm.addEventListener('submit', async (e) => {
       }
       
       try {
-        const thumbFileName = `thumbnails/${Date.now()}-${thumbFile.name}`;
-        console.log('[Upload] Nome da thumbnail:', thumbFileName);
+        // Sanitizar nome da thumbnail também
+        const thumbSanitizedName = thumbFile.name
+          .replace(/[^a-zA-Z0-9.-]/g, '_')
+          .replace(/_{2,}/g, '_')
+          .replace(/^_|_$/g, '');
+        
+        const thumbFileName = `thumbnails/${Date.now()}-${thumbSanitizedName}`;
+        console.log('[Upload] Nome original da thumbnail:', thumbFile.name);
+        console.log('[Upload] Nome sanitizado da thumbnail:', thumbSanitizedName);
+        console.log('[Upload] Nome da thumbnail no storage:', thumbFileName);
         
         const { data: thumbUploadData, error: thumbUploadError } = await supabase.storage
           .from('videosTreinos')
